@@ -61,22 +61,24 @@ ECR_REPO=$(terraform output -raw ecr_repository_url)
 
 ### Step 3 — Build and push the container image
 
+> **Note:** Docker commands require root privileges. Prefix with `sudo` or run as root.
+
 ```bash
 # From the project root
 cd ..
 
 # Build the image
-docker build -t vcf-normalisation .
+sudo docker build -t vcf-normalisation .
 
 # Authenticate Docker to ECR
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 REGION=$(aws configure get region)
 aws ecr get-login-password --region "$REGION" \
-  | docker login --username AWS --password-stdin "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
+  | sudo docker login --username AWS --password-stdin "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
 
 # Tag and push
-docker tag vcf-normalisation:latest "$ECR_REPO:latest"
-docker push "$ECR_REPO:latest"
+sudo docker tag vcf-normalisation:latest "$ECR_REPO:latest"
+sudo docker push "$ECR_REPO:latest"
 ```
 
 ### Step 4 — Full Terraform apply (deploys Lambda)
@@ -93,9 +95,9 @@ This creates the Lambda function, IAM roles, and S3 event notification using the
 When you update the handler code or bcftools version:
 
 ```bash
-docker build -t vcf-normalisation .
-docker tag vcf-normalisation:latest "$ECR_REPO:latest"
-docker push "$ECR_REPO:latest"
+sudo docker build -t vcf-normalisation .
+sudo docker tag vcf-normalisation:latest "$ECR_REPO:latest"
+sudo docker push "$ECR_REPO:latest"
 
 # Force Lambda to pick up the new image
 FUNCTION_NAME=$(cd terraform && terraform output -raw lambda_function_name)
