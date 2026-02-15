@@ -4,7 +4,7 @@ Serverless pipeline that normalises VCF files using `bcftools norm`. Deployed as
 
 ## Architecture
 
-```
+```text
 S3 (input/)  →  S3 Event Notification  →  Lambda (bcftools container)  →  S3 (output/)
 ```
 
@@ -39,14 +39,14 @@ genome_ref_key    = "genomes/hg38/genome.fa"
 
 The reference genome index must exist at `<genome_ref_key>.fai` in the same bucket (e.g. `genomes/hg38/genome.fa.fai`).
 
-### Step 2 — First Terraform apply (creates ECR repo)
+### Step 2 — Create the ECR repository
 
 ```bash
 terraform init
-terraform apply
+terraform apply -target=aws_ecr_repository.this -target=aws_ecr_lifecycle_policy.this
 ```
 
-This will fail on the Lambda resource because no container image exists in ECR yet. That's expected — it creates the ECR repository, IAM roles, and S3 notification configuration.
+This creates the ECR repository without attempting to create the Lambda (which needs the image to exist first).
 
 Grab the ECR repository URL from the output:
 
@@ -74,14 +74,14 @@ docker tag vcf-normalisation:latest "$ECR_REPO:latest"
 docker push "$ECR_REPO:latest"
 ```
 
-### Step 4 — Second Terraform apply (deploys Lambda)
+### Step 4 — Full Terraform apply (deploys Lambda)
 
 ```bash
 cd terraform
 terraform apply
 ```
 
-This time the Lambda function will be created successfully using the image you just pushed.
+This creates the Lambda function, IAM roles, and S3 event notification using the image you just pushed.
 
 ### Updating the Lambda
 
@@ -93,8 +93,9 @@ docker tag vcf-normalisation:latest "$ECR_REPO:latest"
 docker push "$ECR_REPO:latest"
 
 # Force Lambda to pick up the new image
+FUNCTION_NAME=$(cd terraform && terraform output -raw lambda_function_name)
 aws lambda update-function-code \
-  --function-name vcf-normalisation \
+  --function-name "$FUNCTION_NAME" \
   --image-uri "$ECR_REPO:latest"
 ```
 
@@ -137,7 +138,7 @@ Or invoke directly with the AWS CLI:
 
 ```bash
 aws lambda invoke \
-  --function-name vcf-normalisation \
+  --function-name "$FUNCTION_NAME" \
   --payload '{"bucket": "my-group-vcf-data", "key": "input/sample.vcf.gz"}' \
   --cli-binary-format raw-in-base64-out \
   /dev/stdout
@@ -145,16 +146,22 @@ aws lambda invoke \
 
 ### Monitoring
 
+Set the function name from Terraform output (or use the `FUNCTION_NAME` env var from earlier steps):
+
+```bash
+FUNCTION_NAME=$(cd terraform && terraform output -raw lambda_function_name)
+```
+
 View Lambda logs in CloudWatch:
 
 ```bash
-aws logs tail /aws/lambda/vcf-normalisation --follow
+aws logs tail "/aws/lambda/$FUNCTION_NAME" --follow
 ```
 
 Check for invocation errors:
 
 ```bash
-aws lambda get-function --function-name vcf-normalisation \
+aws lambda get-function --function-name "$FUNCTION_NAME" \
   --query 'Configuration.{State:State,LastModified:LastModified}'
 ```
 

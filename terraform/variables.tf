@@ -13,12 +13,22 @@ variable "input_prefix" {
   description = "S3 key prefix that triggers the Lambda (must end with /)"
   type        = string
   default     = "input/"
+
+  validation {
+    condition     = can(regex("/$", var.input_prefix))
+    error_message = "input_prefix must end with a trailing slash."
+  }
 }
 
 variable "output_prefix" {
   description = "S3 key prefix where normalised VCFs are written"
   type        = string
   default     = "output/"
+
+  validation {
+    condition     = can(regex("/$", var.output_prefix))
+    error_message = "output_prefix must end with a trailing slash."
+  }
 }
 
 variable "genome_ref_bucket" {

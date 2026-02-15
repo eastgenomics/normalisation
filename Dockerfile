@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/python:3.12
+FROM public.ecr.aws/lambda/python:3.12 AS builder
 
 # Install bcftools and htslib dependencies
 RUN dnf install -y \
@@ -33,7 +33,11 @@ RUN curl -fsSL https://github.com/samtools/bcftools/releases/download/${BCFTOOLS
     && make install \
     && cd / && rm -rf bcftools-${BCFTOOLS_VERSION}
 
-# Ensure shared libs are found
+# --- Final stage: slim runtime image ---
+FROM public.ecr.aws/lambda/python:3.12
+
+# Copy only compiled binaries and shared libraries from builder
+COPY --from=builder /usr/local /usr/local
 ENV LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
 
 # Copy handler code

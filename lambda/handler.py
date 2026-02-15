@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import shutil
 import subprocess
 import urllib.parse
 from pathlib import Path
@@ -122,7 +123,7 @@ def _run_bcftools_norm(input_path, genome_path):
     ]
 
     logger.info("Running: %s", " ".join(cmd))
-    result = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    result = subprocess.run(cmd, capture_output=True, text=True, check=False, timeout=540)
 
     if result.stdout:
         logger.info("bcftools stdout: %s", result.stdout)
@@ -150,5 +151,4 @@ def _upload_output(bucket, input_key, output_path):
 def _cleanup():
     """Remove all files from the work directory."""
     if WORK_DIR.exists():
-        for f in WORK_DIR.iterdir():
-            f.unlink(missing_ok=True)
+        shutil.rmtree(WORK_DIR, ignore_errors=True)

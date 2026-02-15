@@ -19,7 +19,7 @@ fi
 
 BUCKET="$1"
 KEY="$2"
-PAYLOAD=$(printf '{"bucket": "%s", "key": "%s"}' "$BUCKET" "$KEY")
+PAYLOAD=$(jq -n --arg b "$BUCKET" --arg k "$KEY" '{bucket: $b, key: $k}')
 
 echo "Invoking ${FUNCTION_NAME} with payload: ${PAYLOAD}"
 
@@ -27,4 +27,4 @@ aws lambda invoke \
     --function-name "$FUNCTION_NAME" \
     --payload "$PAYLOAD" \
     --cli-binary-format raw-in-base64-out \
-    /dev/stdout 2>/dev/null | jq .
+    /dev/stdout | jq .
