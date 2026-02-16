@@ -17,3 +17,11 @@ genome_ref_key    = "genomes/hg38/Homo_sapiens.GRCh38.dna.toplevel.fa.gz"  # .fa
 #   Environment = "production"
 #   Team        = "genomics"
 # }
+
+# Grant Lambda access to additional S3 prefixes (e.g. for integration testing)
+# extra_s3_prefixes = [
+#   {
+#     read_prefix  = "test/input/"
+#     write_prefix = "test/output/"
+#   }
+# ]

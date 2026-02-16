@@ -213,7 +213,18 @@ Test data lives under separate S3 prefixes (`test/input/`, `test/expected/`), co
 
 #### Setup
 
-Upload test inputs and expected outputs to S3:
+1. Grant the Lambda access to the test prefixes by adding the following to `terraform.tfvars` and running `terraform apply`:
+
+```hcl
+extra_s3_prefixes = [
+  {
+    read_prefix  = "test/input/"
+    write_prefix = "test/output/"
+  }
+]
+```
+
+2. Upload test inputs and expected outputs to S3:
 
 ```bash
 aws s3 sync ./test_vcfs/ s3://my-vcf-data/test/input/
