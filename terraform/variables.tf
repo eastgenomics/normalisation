@@ -72,6 +72,16 @@ variable "extra_s3_prefixes" {
     write_prefix = string
   }))
   default = []
+
+  validation {
+    condition     = alltrue([for p in var.extra_s3_prefixes : can(regex("/$", p.read_prefix))])
+    error_message = "Each read_prefix in extra_s3_prefixes must end with a trailing slash."
+  }
+
+  validation {
+    condition     = alltrue([for p in var.extra_s3_prefixes : can(regex("/$", p.write_prefix))])
+    error_message = "Each write_prefix in extra_s3_prefixes must end with a trailing slash."
+  }
 }
 
 variable "tags" {
