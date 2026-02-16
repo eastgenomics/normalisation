@@ -195,6 +195,7 @@ See `terraform/variables.tf` for all options. Key variables:
 | `lambda_timeout` | Lambda timeout (seconds) | 600 |
 | `lambda_ephemeral_storage_mb` | Ephemeral `/tmp` storage (MB) | 4096 |
 | `ecr_image_tag` | Container image tag to deploy | `latest` |
+| `extra_s3_prefixes` | Extra read/write S3 prefix pairs for Lambda (e.g. testing) | `[]` |
 
 ## Testing
 
@@ -237,7 +238,7 @@ aws s3 sync ./expected_vcfs/ s3://my-vcf-data/test/expected/
 Example:
 
 ```bash
-FUNCTION_NAME=my-vcf-lambda MAX_PARALLEL=20 ./scripts/integration_test.sh my-vcf-data
+MAX_PARALLEL=20 ./scripts/integration_test.sh my-vcf-data
 ```
 
 ## Normalisation command

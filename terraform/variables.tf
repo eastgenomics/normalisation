@@ -65,6 +65,25 @@ variable "ecr_image_tag" {
   default     = "latest"
 }
 
+variable "extra_s3_prefixes" {
+  description = "Additional S3 prefix pairs (read/write) for the Lambda, e.g. for integration testing"
+  type = list(object({
+    read_prefix  = string
+    write_prefix = string
+  }))
+  default = []
+
+  validation {
+    condition     = alltrue([for p in var.extra_s3_prefixes : can(regex("/$", p.read_prefix))])
+    error_message = "Each read_prefix in extra_s3_prefixes must end with a trailing slash."
+  }
+
+  validation {
+    condition     = alltrue([for p in var.extra_s3_prefixes : can(regex("/$", p.write_prefix))])
+    error_message = "Each write_prefix in extra_s3_prefixes must end with a trailing slash."
+  }
+}
+
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
