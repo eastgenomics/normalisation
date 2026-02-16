@@ -65,6 +65,15 @@ variable "ecr_image_tag" {
   default     = "latest"
 }
 
+variable "extra_s3_prefixes" {
+  description = "Additional S3 prefix pairs (read/write) for the Lambda, e.g. for integration testing"
+  type = list(object({
+    read_prefix  = string
+    write_prefix = string
+  }))
+  default = []
+}
+
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)

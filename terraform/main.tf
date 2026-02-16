@@ -86,7 +86,10 @@ resource "aws_iam_role_policy" "lambda_s3" {
         Action = [
           "s3:GetObject",
         ]
-        Resource = "${data.aws_s3_bucket.input.arn}/${var.input_prefix}*"
+        Resource = concat(
+          ["${data.aws_s3_bucket.input.arn}/${var.input_prefix}*"],
+          [for p in var.extra_s3_prefixes : "${data.aws_s3_bucket.input.arn}/${p.read_prefix}*"],
+        )
       },
       {
         Sid    = "WriteOutputBucket"
@@ -94,7 +97,10 @@ resource "aws_iam_role_policy" "lambda_s3" {
         Action = [
           "s3:PutObject",
         ]
-        Resource = "${data.aws_s3_bucket.input.arn}/${var.output_prefix}*"
+        Resource = concat(
+          ["${data.aws_s3_bucket.input.arn}/${var.output_prefix}*"],
+          [for p in var.extra_s3_prefixes : "${data.aws_s3_bucket.input.arn}/${p.write_prefix}*"],
+        )
       },
       {
         Sid    = "ReadGenomeRef"

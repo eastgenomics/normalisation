@@ -237,7 +237,7 @@ aws s3 sync ./expected_vcfs/ s3://my-vcf-data/test/expected/
 Example:
 
 ```bash
-FUNCTION_NAME=my-vcf-lambda MAX_PARALLEL=20 ./scripts/integration_test.sh my-vcf-data
+MAX_PARALLEL=20 ./scripts/integration_test.sh my-vcf-data
 ```
 
 ## Normalisation command
