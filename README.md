@@ -207,7 +207,13 @@ pytest tests/
 
 ### Integration tests
 
-The integration test script invokes the Lambda on all test VCFs stored in S3 and compares outputs against pre-normalised expected files using `bcftools isec`.
+The integration test script invokes the Lambda on all test VCFs stored in S3 and compares outputs against expected files using three levels of comparison:
+
+1. **`bcftools stats`** — record count sanity check (catches obvious mismatches early)
+2. **`bcftools isec`** — site-level comparison (CHROM/POS/REF/ALT identity)
+3. **`bcftools query` + `diff`** — field-level comparison (GT, DP, AD values — catches e.g. incorrect AD splits after multiallelic decomposition)
+
+A file passes only if all three tiers pass. After the run, a markdown report is written to `integration_report.md` (configurable via `REPORT_FILE`) with a results table, failure details, and full diffs in an appendix.
 
 Test data lives under separate S3 prefixes (`test/input/`, `test/expected/`), completely separate from the production `input/` → `output/` flow.
 
@@ -245,6 +251,7 @@ aws s3 sync ./expected_vcfs/ s3://my-vcf-data/test/expected/
 | `FUNCTION_NAME` | Env var | `vcf-normalisation` |
 | `MAX_PARALLEL` | Env var | `10` |
 | `POLL_TIMEOUT` | Env var | `120` (seconds per file) |
+| `REPORT_FILE` | Env var | `integration_report.md` |
 
 Example:
 
