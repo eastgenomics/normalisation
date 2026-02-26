@@ -120,7 +120,9 @@ If you are running these steps on a machine that has no local Terraform state (e
 
 ```bash
 cd terraform
+terraform import aws_ecr_repository.this vcf-normalisation
 terraform import aws_iam_role.lambda vcf-normalisation-lambda
+terraform import aws_lambda_function.normalise vcf-normalisation
 terraform import aws_lambda_permission.s3 vcf-normalisation/AllowS3Invoke
 ```
 
